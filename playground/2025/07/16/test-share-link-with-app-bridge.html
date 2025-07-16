@@ -1,4 +1,47 @@
 <script>
+    
+
+    const bridge = (function () {
+      try {
+        if (window.kidsnoteApp.requestNativeFeature) {
+          function wrapper(param) {
+            const jsonString = JSON.stringify(param);
+            return window.kidsnoteApp.requestNativeFeature(jsonString);
+          }
+          return wrapper;
+        }
+      } catch (e) {
+        console.error(e);
+      }
+
+      try {
+        if (window.webkit.messageHandlers.kidsnoteApp.postMessage) {
+          function wrapper(param) {
+            const jsonString = JSON.stringify(param);
+            const msg = `requestNativeFeature(${jsonString})`;
+            return window.webkit.messageHandlers.kidsnoteApp.postMessage(msg);
+          }
+          return wrapper;
+        }
+      } catch (e) {
+        console.error(e);
+      }
+
+      try {
+        console.error('브릿지 인터페이스 참조 실패!');
+
+        function wrapper(param) {
+          console.warn('브릿지 인터페이스 참조 실패!');
+          return new Promise((resolve) => {
+            resolve();
+          });
+        }
+        return wrapper;
+      } catch (e) {
+        console.error(e);
+      }
+    })();
+        
     document.addEventListener('DOMContentLoaded', function() {
       document.getElementById('shareBtn1').addEventListener('click', function() {
         bridge({
